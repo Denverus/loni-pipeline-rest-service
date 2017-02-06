@@ -1,6 +1,6 @@
 {
-  "name": "Start on Heroku: Java",
-  "description": "A barebones Java app, which can easily be deployed to Heroku.",
+  "name": "LONI Pipeline REST Service",
+  "description": "REST Service for LONI Pipeline.",
   "image": "heroku/java",
-  "addons": [ "heroku-postgresql" ]
+  "addons": [ ]
 }
