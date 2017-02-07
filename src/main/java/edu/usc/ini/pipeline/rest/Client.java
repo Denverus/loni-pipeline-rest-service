@@ -4,7 +4,7 @@ import java.util.UUID;
 
 public class Client {
 	private UUID id;
-
+	
 	public Client() {
 		id = UUID.randomUUID();
 	}

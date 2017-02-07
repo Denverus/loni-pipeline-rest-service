@@ -1,10 +1,10 @@
 package edu.usc.ini.pipeline.rest;
 
-import java.util.concurrent.atomic.AtomicLong;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import edu.usc.ini.pipeline.rest.protocol.ConnectionResponse;
 import edu.usc.ini.pipeline.rest.protocol.RegistrationResponse;
 import edu.usc.ini.pipeline.rest.protocol.UnregistrationResponse;
 
@@ -26,5 +26,13 @@ public class PipelineController {
         } else {
         	return new UnregistrationResponse();
         }
-    }       
+    }  
+    
+    @RequestMapping("/connect")
+    public ConnectionResponse connect(@RequestParam(value="clientId") String clientId, 
+    		@RequestParam(value="server") String server, @RequestParam(value="port") int port, 
+    		@RequestParam(value="username") String username, @RequestParam(value="password") String password) {
+        ConnectionResponse connectionResponse = clientDispatcher.connect(clientId, server, port, username, password);
+		return connectionResponse;
+    }     
 }
