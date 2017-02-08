@@ -1,5 +1,6 @@
 package edu.usc.ini.pipeline.rest;
 
+import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -8,14 +9,18 @@ import org.jboss.logging.Logger;
 import edu.usc.ini.pipeline.rest.messages.ConnectMessage;
 import edu.usc.ini.pipeline.rest.messages.ConnectionEstablished;
 import edu.usc.ini.pipeline.rest.messages.ConnectionFailed;
+import edu.usc.ini.pipeline.rest.messages.GetSessionsMessage;
 import edu.usc.ini.pipeline.rest.messages.IncomingMessage;
 import edu.usc.ini.pipeline.rest.messages.Message;
 import edu.usc.ini.pipeline.rest.messages.OutcomingMessage;
+import edu.usc.ini.pipeline.rest.messages.SessionListMessage;
 import pipeline.api.PipelineAPI;
 import pipeline.api.callback.ConnectionCallback;
+import pipeline.api.callback.SessionListCallback;
 import pipeline.api.workflow.Connection;
+import pipeline.api.workflow.Session;
 
-public class ApiThread extends Thread implements ConnectionCallback {
+public class ApiThread extends Thread implements ConnectionCallback, SessionListCallback {
 	
 	private static final Logger logger = Logger.getLogger(ApiThread.class);
 	
@@ -63,6 +68,10 @@ public class ApiThread extends Thread implements ConnectionCallback {
 					connectMessage.getServer(), connectMessage.getPort());
 			logger.info("Call PipelineApi to connect "+connection);
 			pipelineApi.connect(connection , this);
+		} else if (message instanceof GetSessionsMessage) {
+			GetSessionsMessage getSessionsMessage = (GetSessionsMessage) message; 
+			Connection connection = getSessionsMessage.getConnection();
+			pipelineApi.requestSessionList(connection , this);
 		}
 	}
 	
@@ -93,5 +102,11 @@ public class ApiThread extends Thread implements ConnectionCallback {
 	public void onConnectionFailed(Connection connection, String error) {
 		logger.info("Connection failed. "+error);
 		addOutcommingMessage(new ConnectionFailed(error));
+	}
+
+	@Override
+	public void onSessionList(List<Session> sessions) {
+		logger.info("Got sessions list "+sessions.size());
+		addOutcommingMessage(new SessionListMessage(sessions));
 	}
 }

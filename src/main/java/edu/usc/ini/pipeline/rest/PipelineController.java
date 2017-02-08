@@ -5,6 +5,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import edu.usc.ini.pipeline.rest.protocol.ConnectionResponse;
+import edu.usc.ini.pipeline.rest.protocol.SessionsResponse;
 
 @RestController
 public class PipelineController {
@@ -21,5 +22,11 @@ public class PipelineController {
     public ConnectionResponse close(@RequestParam(value="token") String token) {
         ConnectionResponse connectionResponse = clientDispatcher.close(token);
 		return connectionResponse;
-    }     
+    }
+    
+    @RequestMapping("sessions/list")
+    public SessionsResponse getSessionsList(@RequestParam(value="token") String token) {
+    	SessionsResponse sessionsResponse = clientDispatcher.getSessionsList(token);
+		return sessionsResponse;
+    }      
 }

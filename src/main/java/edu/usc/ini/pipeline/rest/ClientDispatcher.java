@@ -1,6 +1,7 @@
 package edu.usc.ini.pipeline.rest;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -9,9 +10,14 @@ import org.jboss.logging.Logger;
 import edu.usc.ini.pipeline.rest.messages.ConnectMessage;
 import edu.usc.ini.pipeline.rest.messages.ConnectionEstablished;
 import edu.usc.ini.pipeline.rest.messages.ConnectionFailed;
+import edu.usc.ini.pipeline.rest.messages.GetSessionsMessage;
 import edu.usc.ini.pipeline.rest.messages.OutcomingMessage;
+import edu.usc.ini.pipeline.rest.messages.SessionListFailedMessage;
+import edu.usc.ini.pipeline.rest.messages.SessionListMessage;
 import edu.usc.ini.pipeline.rest.protocol.ConnectionResponse;
+import edu.usc.ini.pipeline.rest.protocol.SessionsResponse;
 import pipeline.api.workflow.Connection;
+import pipeline.api.workflow.Session;
 
 public class ClientDispatcher {
 	
@@ -87,5 +93,33 @@ public class ClientDispatcher {
 	public ConnectionResponse close(String token) {
 		String result = unregister(UUID.fromString(token));
 		return result != null ? new ConnectionResponse() : new ConnectionResponse("No connections with specified token.");
+	}
+
+	public SessionsResponse getSessionsList(String tokenText) {
+		UUID token = UUID.fromString(tokenText);
+		
+		final Connection connection = connectionsMap.get(token);
+		final ApiThread apiThread = apies.get(token);
+		
+		if (apiThread == null) {
+			return new SessionsResponse("Connection not established.");
+		}
+		
+		GetSessionsMessage getSessionsMessage = new GetSessionsMessage(connection);
+		apiThread.addMessage(getSessionsMessage);
+
+		OutcomingMessage outMessage = apiThread.getMessage();
+		
+		if (outMessage instanceof SessionListMessage) {
+			SessionListMessage sessionListMessage = (SessionListMessage) outMessage;
+			final List<Session> sessions = sessionListMessage.getSessions();
+			SessionsResponse response = new SessionsResponse();
+			response.setSessions(sessions);
+			return response;
+		} else if (outMessage instanceof SessionListFailedMessage) {
+			return new SessionsResponse("Can't retrevie sessions.");
+		} else {
+			return new SessionsResponse("Unknown error.");
+		}
 	}	
 }
