@@ -23,8 +23,8 @@ public class ApiThread extends Thread implements ConnectionCallback {
 	
 	private volatile boolean stoped = false;
 	
-	private Queue<IncomingMessage> innerQueue;
-	private Queue<OutcomingMessage> outcommingQueue;
+	private LinkedBlockingQueue<IncomingMessage> innerQueue;
+	private LinkedBlockingQueue<OutcomingMessage> outcommingQueue;
 	
 	public ApiThread() throws InterruptedException {
 		pipelineApi = new PipelineAPI();
@@ -38,25 +38,21 @@ public class ApiThread extends Thread implements ConnectionCallback {
 	
 	public void addMessage(IncomingMessage message) {
 		logger.info("New message "+message.getClass());
-		innerQueue.add(message);
 		try {
-			outcommingQueue.wait();
+			innerQueue.put(message);
 		} catch (InterruptedException e) {
 			logger.error(e);
-		}		
+		}
 	}
 	
 	public OutcomingMessage getMessage() {
-		OutcomingMessage message = null;
-		/*while (outcommingQueue.isEmpty()) {
-			try {
-				Thread.sleep(100);
-			} catch (InterruptedException e) {
-				logger.error(e);
-			}
-		};*/
-		message = outcommingQueue.poll();
-		return message;
+		OutcomingMessage outMessage = null;
+		try {
+			outMessage = outcommingQueue.take();
+		} catch (InterruptedException e) {
+			logger.error(e);
+		}
+		return outMessage;
 	}	
 	
 	private void handleMessage(Message message) {
@@ -80,9 +76,10 @@ public class ApiThread extends Thread implements ConnectionCallback {
 	}
 	
 	private void addOutcommingMessage(OutcomingMessage outcomingMessage) {
-		synchronized(outcommingQueue) {
-			outcommingQueue.add(outcomingMessage);
-			outcommingQueue.notify();
+		try {
+			outcommingQueue.put(outcomingMessage);
+		} catch (InterruptedException e) {
+			logger.error(e);
 		}
 	}
 

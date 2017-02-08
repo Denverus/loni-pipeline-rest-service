@@ -5,34 +5,21 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import edu.usc.ini.pipeline.rest.protocol.ConnectionResponse;
-import edu.usc.ini.pipeline.rest.protocol.RegistrationResponse;
-import edu.usc.ini.pipeline.rest.protocol.UnregistrationResponse;
 
 @RestController
 public class PipelineController {
     private final ClientDispatcher clientDispatcher = new ClientDispatcher();
     
-    @RequestMapping("/register")
-    public RegistrationResponse register() {
-        String id = clientDispatcher.register();
-		return new RegistrationResponse(id);
-    }    
-    
-    @RequestMapping("/unregister")
-    public UnregistrationResponse unregister(@RequestParam(value="clientId") String clientId) {
-        String id = clientDispatcher.unregister(clientId);
-        if (id != null) {
-        	return new UnregistrationResponse(id);
-        } else {
-        	return new UnregistrationResponse();
-        }
-    }  
-    
-    @RequestMapping("/connect")
-    public ConnectionResponse connect(@RequestParam(value="clientId") String clientId, 
-    		@RequestParam(value="server") String server, @RequestParam(value="port") int port, 
+    @RequestMapping("connection/connect")
+    public ConnectionResponse connect(@RequestParam(value="server") String server, @RequestParam(value="port") int port, 
     		@RequestParam(value="username") String username, @RequestParam(value="password") String password) {
-        ConnectionResponse connectionResponse = clientDispatcher.connect(clientId, server, port, username, password);
+        ConnectionResponse connectionResponse = clientDispatcher.connect(server, port, username, password);
+		return connectionResponse;
+    }     
+
+    @RequestMapping("connection/close")
+    public ConnectionResponse close(@RequestParam(value="token") String token) {
+        ConnectionResponse connectionResponse = clientDispatcher.close(token);
 		return connectionResponse;
     }     
 }
