@@ -1,7 +1,6 @@
 package edu.usc.ini.pipeline.rest;
 
 import java.util.List;
-import java.util.Queue;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import org.jboss.logging.Logger;
@@ -44,6 +43,7 @@ public class ApiThread extends Thread implements ConnectionCallback, SessionList
 	public void addMessage(IncomingMessage message) {
 		logger.info("New message "+message.getClass());
 		try {
+			outcommingQueue.clear();
 			innerQueue.put(message);
 		} catch (InterruptedException e) {
 			logger.error(e);
